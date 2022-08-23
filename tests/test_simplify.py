@@ -70,3 +70,25 @@ def test(muted: list[str], unmuted: list[int]) -> None:
 def test(muted: list[str], unmuted: Sequence[int]) -> None:
     del muted[2]
     len(unmuted)"""
+
+
+def test_list_to_sequence_delete_nested() -> None:
+    code = """\
+def test(muted: list[str], unmuted: list[int]) -> None:
+    del muted[2]
+    len(unmuted)
+
+    def test2(muted2: list[str], unmuted2: list[int]) -> None:
+        del muted2[3]
+        len(unmuted2)"""
+
+    result = FuncReducer().visit(ast.parse(code))
+
+    assert ast.unparse(result) == """\
+def test(muted: list[str], unmuted: Sequence[int]) -> None:
+    del muted[2]
+    len(unmuted)
+
+    def test2(muted2: list[str], unmuted2: Sequence[int]) -> None:
+        del muted2[3]
+        len(unmuted2)"""

@@ -22,9 +22,10 @@ class AccImmutables(ast.NodeVisitor):
         return set(self.func.args.args) - set(self.are_muted_args)
 
     def _matching_func_arg(self, name: ast.Name) -> Optional[ast.arg]:
-        return next(n for n in self.func.args.args if n.arg == name.id)
+        return next((n for n in self.func.args.args if n.arg == name.id), None)
 
     def visit_Attribute(self, node: ast.Attribute) -> None:
+        self.generic_visit(node)
         if not isinstance(node.value, ast.Name):
             # don't even know what this case is? so gonna ignore it
             return
@@ -44,9 +45,11 @@ class AccImmutables(ast.NodeVisitor):
             self.are_muted_args.add(arg)
 
     def visit_Assign(self, node: ast.Assign) -> None:
+        self.generic_visit(node)
         self._check_modify_mutli(node)
 
     def visit_Delete(self, node: ast.Delete) -> None:
+        self.generic_visit(node)
         self._check_modify_mutli(node)
 
 
@@ -59,6 +62,9 @@ class FuncReducer(ast.NodeTransformer):
     }
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Optional[ast.FunctionDef]:
+        _node = self.generic_visit(node)
+        assert isinstance(_node, ast.FunctionDef)
+        node = _node
         mut_checker = AccImmutables(node)
         mut_checker.visit(node)
         for arg in node.args.args:
