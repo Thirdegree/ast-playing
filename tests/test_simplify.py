@@ -57,6 +57,7 @@ def test(muted: list[str], unmuted: Sequence[int]) -> None:
     muted[2] = 'hello'
     len(unmuted)"""
 
+
 def test_list_to_sequence_delete() -> None:
     code = """\
 def test(muted: list[str], unmuted: list[int]) -> None:

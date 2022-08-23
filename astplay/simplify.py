@@ -1,3 +1,6 @@
+"""
+Where possible, reduce mutable types to their immutable counterpart (dict -> mapping, list -> sequence, etc)
+"""
 import ast
 from typing import Optional, Dict, Mapping, Union
 from pathlib import Path
@@ -59,18 +62,15 @@ class FuncReducer(ast.NodeTransformer):
         mut_checker = AccImmutables(node)
         mut_checker.visit(node)
         for arg in node.args.args:
-            # for now we assume everything that isn't mutated is a dictionary,
-            # because that's definitely a reasonable thing to assume
             if arg not in mut_checker.non_muted_args:
                 continue
             if arg.annotation is None:
                 continue
-            if not isinstance(getattr(arg.annotation, 'value', None), ast.Name):
+            value = getattr(arg.annotation, 'value', None)
+            if not isinstance(value, ast.Name):
                 # again, ignoring the things we don't understand and are too on vacation to research
                 continue
-            assert arg.annotation is not None
-            arg.annotation.value = ast.Name(
-                id=self.reduce_map.get(arg.annotation.value.id, arg.annotation.value.id))  # type: ignore[attr-defined]
+            value.id = self.reduce_map.get(value.id, value.id)
         return node
 
 
