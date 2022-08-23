@@ -42,3 +42,30 @@ def test(muted: dict[str, int], unmuted: dict[int, int]) -> None:
 def test(muted: dict[str, int], unmuted: Mapping[int, int]) -> None:
     del muted['hello']
     unmuted.items()"""
+
+
+def test_list_to_sequence_assign() -> None:
+    code = """\
+def test(muted: list[str], unmuted: list[int]) -> None:
+    muted[2] = 'hello'
+    len(unmuted)"""
+
+    result = FuncReducer().visit(ast.parse(code))
+
+    assert ast.unparse(result) == """\
+def test(muted: list[str], unmuted: Sequence[int]) -> None:
+    muted[2] = 'hello'
+    len(unmuted)"""
+
+def test_list_to_sequence_delete() -> None:
+    code = """\
+def test(muted: list[str], unmuted: list[int]) -> None:
+    del muted[2]
+    len(unmuted)"""
+
+    result = FuncReducer().visit(ast.parse(code))
+
+    assert ast.unparse(result) == """\
+def test(muted: list[str], unmuted: Sequence[int]) -> None:
+    del muted[2]
+    len(unmuted)"""

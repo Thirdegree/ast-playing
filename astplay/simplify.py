@@ -48,6 +48,13 @@ class AccImmutables(ast.NodeVisitor):
 
 
 class FuncReducer(ast.NodeTransformer):
+    reduce_map = {
+        'Dict': 'Mapping',
+        'dict': 'Mapping',
+        'List': 'Sequence',
+        'list': 'Sequence',
+    }
+
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Optional[ast.FunctionDef]:
         mut_checker = AccImmutables(node)
         mut_checker.visit(node)
@@ -63,7 +70,7 @@ class FuncReducer(ast.NodeTransformer):
                 continue
             assert arg.annotation is not None
             arg.annotation.value = ast.Name(
-                id='Mapping')  # type: ignore[attr-defined]
+                id=self.reduce_map.get(arg.annotation.value.id, arg.annotation.value.id))  # type: ignore[attr-defined]
         return node
 
 
