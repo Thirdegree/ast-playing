@@ -63,7 +63,7 @@ class FuncReducer(ast.NodeTransformer):
 
     def visit_FunctionDef(self, node: ast.FunctionDef) -> Optional[ast.FunctionDef]:
         _node = self.generic_visit(node)
-        assert isinstance(_node, ast.FunctionDef)
+        assert isinstance(_node, ast.FunctionDef), f"function has been turned into... something else? {node}"
         node = _node
         mut_checker = AccImmutables(node)
         mut_checker.visit(node)
